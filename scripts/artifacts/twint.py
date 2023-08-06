@@ -1,45 +1,64 @@
 # Created by @KefreR (Frank Ressat)
 
-import sqlite3
 from scripts.ilapfuncs import logfunc, logdevinfo, timeline, kmlgen, tsv, is_platform_windows, open_sqlite_db_readonly
+from scripts.artifact_report import ArtifactHtmlReport
 
 def get_twint(files_found, report_folder, seeker, wrap_text):
     for file_found in files_found:
         file_found = str(file_found)
 
-    data_list = []
     db = open_sqlite_db_readonly(file_found)
     cursor = db.cursor()
     cursor.execute('''
-         SELECT 
-         ZTRANSACTION.Z_PK as "INDEX",
-         datetime(ZTRANSACTION.ZCREATIONDATE+978307200,'UNIXEPOCH', 'LOCALTIME') as "CREATION DATE",
-         datetime(ZTRANSACTION.ZMODIFIEDTIMESTAMP+978307200,'UNIXEPOCH', 'LOCALTIME') as "APPLICATION VALIDATION DATE", 
-         datetime(ZTRANSACTION.ZSECONDPHASETIMESTAMP+978307200,'UNIXEPOCH', 'LOCALTIME') as "SECOND PHASE TIMESTAMP (DESTINATION VALIDATION)", 
-         datetime(ZTRANSACTION.ZSTATUSPENDINGUNTILDATE+978307200,'UNIXEPOCH', 'LOCALTIME') as "TRANSACTION EXPIRY DATE", 
-         ZTRANSACTION.ZMERCHANTBRANCHNAME as "MERCHANT BRANCH NAME", ZTRANSACTION.ZMERCHANTNAME as "MERCHANT NAME", 
-         ZTRANSACTION.ZP2PSENDERMOBILENR as "SENDER MOBILE NUMBER", 
-         ZTRANSACTION.ZP2PINITIATEMESSAGE as "INITIATE MESSAGE OF TRANSACTION", 
-         ZTRANSACTION.ZP2PRECIPIENTMOBILENR as "RECIPIENT MOBILE NUMBER", 
-         ZTRANSACTION.ZP2PRECIPIENTNAME as "RECIPIENT NAME", 
-         ZTRANSACTION.ZP2PREPLYMESSAGE as "REPLY MESSAGE", 
-         ZTRANSACTION.ZCONTENTREFERENCE as "CONTENT REFERENCE", 
-         ZTRANSACTION.ZAUTHORIZEDAMOUNT as "AUTHORIZED AMOUNT", 
-         ZTRANSACTION.ZPAIDAMOUNT as "PAID AMOUNT", 
-         ZTRANSACTION.ZREQUESTEDAMOUNT as "REQUESTED AMOUNT", 
-         ZTRANSACTION.ZDISCOUNT as "DISCOUNT", 
-         ZTRANSACTION.ZCURRENCY as "CURRENCY", 
-         ZTRANSACTION.ZORDERLINK as "ORDER LINK", 
-         ZTRANSACTION.ZCONTENTREFERENCESOURCEVALUE as "CONTENT REF SOURCE VALUE", 
-         ZTRANSACTION.ZORDERSTATEVALUE as "TRANSACTION STATE", 
-         ZTRANSACTION.ZORDERTYPEVALUE as "TRANSACTION TYPE", 
-         ZTRANSACTION.ZP2PHASPICTURE as "PRESENCE OF PICTURE IN TRANSACTION", 
-         ZTRANSACTION.ZTRANSACTIONSIDEVALUE as "TRANSACTION ID VALUE", 
-         ZTRANSACTION.ZFAILUREREASON as "TECHNICAL FAILURE REASON", 
-         ZTRANSACTION.ZIBAN as "IBAN", 
-         ZTRANSACTION.ZMERCHANTTRANSACTIONREF as "MERCHANT TRANSACTION REF", 
-         ZTRANSACTION.ZORDERUUIDSTRING as "ORDER UUID" FROM ZTRANSACTION''')
+        SELECT
+        ZTRANSACTION.Z_PK,
+        datetime(ZTRANSACTION.ZCREATIONDATE+978307200,'UNIXEPOCH', 'LOCALTIME') 
+        datetime(ZTRANSACTION.ZMODIFIEDTIMESTAMP+978307200,'UNIXEPOCH', 'LOCALTIME') 
+        datetime(ZTRANSACTION.ZSECONDPHASETIMESTAMP+978307200,'UNIXEPOCH', 'LOCALTIME') 
+        datetime(ZTRANSACTION.ZSTATUSPENDINGUNTILDATE+978307200,'UNIXEPOCH', 'LOCALTIME')
+        ZTRANSACTION.ZMERCHANTBRANCHNAME,
+        ZTRANSACTION.ZMERCHANTNAME,
+        ZTRANSACTION.ZP2PSENDERMOBILENR,
+        ZTRANSACTION.ZP2PINITIATEMESSAGE,
+        ZTRANSACTION.ZP2PRECIPIENTMOBILENR, 
+        ZTRANSACTION.ZP2PRECIPIENTNAME ,
+        ZTRANSACTION.ZP2PREPLYMESSAGE,
+        ZTRANSACTION.ZAUTHORIZEDAMOUNT, 
+        ZTRANSACTION.ZPAIDAMOUNT, 
+        ZTRANSACTION.ZREQUESTEDAMOUNT, 
+        ZTRANSACTION.ZDISCOUNT, 
+        ZTRANSACTION.ZCURRENCY,
+        ZTRANSACTION.ZCONTENTREFERENCE, 
+        ZTRANSACTION.ZORDERLINK, 
+        ZTRANSACTION.ZCONTENTREFERENCESOURCEVALUE, 
+        ZTRANSACTION.ZORDERSTATEVALUE,
+        ZTRANSACTION.ZORDERTYPEVALUE,
+        ZTRANSACTION.ZP2PHASPICTURE,
+        ZTRANSACTION.ZTRANSACTIONSIDEVALUE,
+        ZTRANSACTION.ZMERCHANTCONFIRMATION,
+        FROM ZTRANSACTION
+        ''')
+    data_list = cursor.fetchall()
+    usagentries = len(data_list)
 
+    if usagentries > 0:
+        descritpion ="Twint - Transaction"
+        report = ArtifactHtmlReport(f'{descritpion}')
+        report.start_artifact_report(report_folder, f'{descritpion}')
+        report.add_script()
+        data_headers = (
+            'Index', 'Creation date', 'Sender confirmation date', 'Receiver validation date', 'Transaction expiry date',
+            'Merchant branch name','Merchant name', 'Sender mobile number', 'Sender message', 'Receiver mobiler number', 
+            'Receiver contact name', 'Response message', 'Amount authorized for the transaction', 'Paid amount', 
+            'Requested amount', 'Discount', 'Currency', 'Content reference', 'Order link','Presence of multimedia content',
+            'Transaction status', 'Type of transaction', 'Direction of the transaction', 'Merchant confirmation' )
+        report.write_artifact_data_table(data_headers, data_list, file_found, html_escape=False)
+        report.end_artifact_report()
+
+        tsvname = f'{descritpion}'
+        tsv(report_folder, data_headers, data_list, tsvname)
+    else:
+        logfunc('Twint - No data available')
 
 __artifacts__ = {
     "twint": (
