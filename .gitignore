@@ -108,3 +108,6 @@ $RECYCLE.BIN/
 *.lnk
 
 *.DS_Store
+
+# idea folder, uncomment if you don't need it
+.idea
