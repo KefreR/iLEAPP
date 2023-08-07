@@ -63,6 +63,6 @@ def get_twint(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "twint": (
         "Twint",
-        ('var/mobile/Containers/Data/Application/*/Library/Application Support/Twint.sqlite'),
+        ('*/var/mobile/Containers/Data/Application/*/Library/Application Support/Twint.sqlite'),
         get_twint)
 }
