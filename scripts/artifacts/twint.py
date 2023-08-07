@@ -35,8 +35,7 @@ def get_twint(files_found, report_folder, seeker, wrap_text):
         ZTRANSACTION.ZORDERTYPEVALUE,
         ZTRANSACTION.ZP2PHASPICTURE,
         ZTRANSACTION.ZTRANSACTIONSIDEVALUE,
-        ZTRANSACTION.ZMERCHANTCONFIRMATION,
-        FROM ZTRANSACTION''')
+        ZTRANSACTION.ZMERCHANTCONFIRMATION FROM ZTRANSACTION''')
 
     data_list = cursor.fetchall()
     usagentries = len(data_list)
