@@ -30,7 +30,7 @@ def get_bundle_info(files_found):
                 return bundle_info
     return {}
 
-def get_notificationsXII(files_found, report_folder, seeker, wrap_text):
+def get_notificationsXII(files_found, report_folder, seeker, wrap_text, timezone_offset):
 
     bundle_info = get_bundle_info(files_found)
     data_list = []
@@ -106,6 +106,6 @@ def get_notificationsXII(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "notificationsXII": (
         "Notifications",
-        ('*private/var/mobile/Library/UserNotifications*'),
+        ('*/mobile/Library/UserNotifications*'),
         get_notificationsXII)
 }

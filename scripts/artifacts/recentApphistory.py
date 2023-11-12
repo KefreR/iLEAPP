@@ -5,7 +5,7 @@ from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows
 
 
-def get_recentApphistory(files_found, report_folder, seeker, wrap_text):
+def get_recentApphistory(files_found, report_folder, seeker, wrap_text, timezone_offset):
     data_list = []
     for file_found in files_found:
         file_found = str(file_found)
@@ -16,7 +16,7 @@ def get_recentApphistory(files_found, report_folder, seeker, wrap_text):
         if RecentAppHistory is not None:
             if len(RecentAppHistory) > 0:
                 for bundleid, timestamp in RecentAppHistory.items():
-                    timestamp = (datetime.datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S'))
+                    timestamp = (datetime.datetime.utcfromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S'))
                     data_list.append((timestamp, bundleid))
         
     if len(data_list) > 0:

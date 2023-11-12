@@ -2,12 +2,12 @@ import os
 import struct
 import blackboxprotobuf
 import nska_deserialize as nd
-from datetime import datetime
+from datetime import datetime, timezone
 from time import mktime
 from io import StringIO
 from io import BytesIO
 from scripts.artifact_report import ArtifactHtmlReport
-from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly
+from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly, convert_utc_human_to_timezone, timestampsconv
 
 def utf8_in_extended_ascii(input_string, *, raise_on_unexpected=False):
     """Returns a tuple of bool (whether mis-encoded utf-8 is present) and str (the converted string)"""
@@ -67,12 +67,7 @@ def utf8_in_extended_ascii(input_string, *, raise_on_unexpected=False):
     
     return mis_encoded_utf8_present, "".join(output)
 
-def timestampsconv(webkittime):
-    unix_timestamp = webkittime + 978307200
-    finaltime = datetime.utcfromtimestamp(unix_timestamp)
-    return(finaltime)
-
-def get_biomeLocationactivity(files_found, report_folder, seeker, wrap_text):
+def get_biomeLocationactivity(files_found, report_folder, seeker, wrap_text, timezone_offset):
 
     typess = {'1': {'type': 'message', 'message_typedef': {'1': {'type': 'str', 'name': ''}, '2': {'type': 'message', 'message_typedef': {'1': {'type': 'int', 'name': ''}, '2': {'type': 'int', 'name': ''}}, 'name': ''}}, 'name': ''}, '2': {'type': 'double', 'name': ''}, '3': {'type': 'double', 'name': ''}, '4': {'type': 'message', 'message_typedef': {'1': {'type': 'message', 'message_typedef': {'1': {'type': 'int', 'name': ''}, '2': {'type': 'int', 'name': ''}}, 'name': ''}, '3': {'type': 'str', 'name': ''}}, 'name': ''}, '5': {'type': 'str', 'name': ''}, '6': {'type': 'message', 'message_typedef': {'1': {'type': 'str', 'name': ''}, '2': {'type': 'str', 'name': ''}, '3': {'type': 'bytes', 'name': ''}, '6': {'type': 'int', 'name': ''}}, 'name': ''}, '7': {'type': 'message', 'message_typedef': {'1': {'type': 'message', 'message_typedef': {}, 'name': ''}, '2': {'type': 'message', 'message_typedef': {'1': {'type': 'message', 'message_typedef': {'1': {'type': 'int', 'name': ''}, '2': {'type': 'int', 'name': ''}}, 'name': ''}, '3': {'type': 'bytes', 'name': ''}, '5': {'type': 'fixed64', 'name': ''}, '4': {'type': 'int', 'name': ''}, '6': {'type': 'bytes', 'name': ''}, '7': {'type': 'fixed64', 'name': ''}}, 'name': ''}, '3': {'type': 'int', 'name': ''}}, 'name': ''}, '8': {'type': 'double', 'name': ''}, '10': {'type': 'int', 'name': ''}}
     
@@ -143,7 +138,11 @@ def get_biomeLocationactivity(files_found, report_folder, seeker, wrap_text):
                 
                 activity = (protostuff['1']['1'])
                 timestart = (timestampsconv(protostuff['2']))
+                timestart = convert_utc_human_to_timezone(timestart, timezone_offset)
+                
                 timeend = (timestampsconv(protostuff['3']))
+                timeend = convert_utc_human_to_timezone(timeend, timezone_offset)
+                
                 bundle = (protostuff['4']['3'])
                 actionguid = (protostuff['5'])
                 data0 = (protostuff['6']['1'])
@@ -178,6 +177,7 @@ def get_biomeLocationactivity(files_found, report_folder, seeker, wrap_text):
                     data6 = (deserialized_plist['NS.relative'])
                     
                 timewrite = (timestampsconv(protostuff['8']))
+                timewrite = convert_utc_human_to_timezone(timewrite, timezone_offset)
                 
                 data_list.append((timestart, timeend, timewrite, activity, bundle, bundle2, data0, data1, data2, data3, data4, data5, data6, actionguid ))
         

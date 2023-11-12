@@ -9,10 +9,10 @@ import scripts.artifacts.artGlobals
  
 from packaging import version
 from scripts.artifact_report import ArtifactHtmlReport
-from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows
+from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, convert_ts_human_to_utc, convert_utc_human_to_timezone
 from scripts.parse3 import ParseProto
 
-def get_mailprotect(files_found, report_folder, seeker, wrap_text):
+def get_mailprotect(files_found, report_folder, seeker, wrap_text, timezone_offset):
 	iOSversion = scripts.artifacts.artGlobals.versionf
 
 	if version.parse(iOSversion) <= version.parse("11"):
@@ -140,7 +140,13 @@ def get_mailprotect(files_found, report_folder, seeker, wrap_text):
 		if usageentries > 0:
 			data_list = [] 
 			for row in all_rows:
-				data_list.append((row[1],row[2],row[3],row[4],row[5],row[6],row[9],row[7],row[8],row[0]))
+				timestampds = convert_ts_human_to_utc(row[1])
+				timestampds = convert_utc_human_to_timezone(timestampds,timezone_offset)
+				
+				timestampdr = convert_ts_human_to_utc(row[2])
+				timestampdr = convert_utc_human_to_timezone(timestampdr,timezone_offset)
+				
+				data_list.append((timestampds,timestampdr,row[3],row[4],row[5],row[6],row[9],row[7],row[8],row[0]))
 			
 			file_found = head
 			description = ''
@@ -192,29 +198,35 @@ def get_mailprotect(files_found, report_folder, seeker, wrap_text):
 		if usageentries > 0:
 			data_list = [] 
 			for row in all_rows:
-				data_list.append((row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9]))
+				timestampds = convert_ts_human_to_utc(row[0])
+				timestampds = convert_utc_human_to_timezone(timestampds,timezone_offset)
+				
+				timestampdr = convert_ts_human_to_utc(row[1])
+				timestampdr = convert_utc_human_to_timezone(timestampdr,timezone_offset)
+				
+				data_list.append((timestampds,timestampdr,row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9]))
 			
 			file_found = head
 			description = ''
-			report = ArtifactHtmlReport('iOS Mail')
+			report = ArtifactHtmlReport('Apple Mail')
 			report.start_artifact_report(report_folder, 'Emails', description)
 			report.add_script()
 			data_headers = ('Date Sent','Date Received','Address','Comment','Subject', 'Summary', 'Read?', 'Flagged?', 'Deleted', 'Mailbox')     
 			report.write_artifact_data_table(data_headers, data_list, file_found)
 			report.end_artifact_report()
 			
-			tsvname = 'iOS Mail'
+			tsvname = 'Apple Mail'
 			tsv(report_folder, data_headers, data_list, tsvname)
 			
-			tlactivity = 'iOS Mail'
+			tlactivity = 'Apple Mail'
 			timeline(report_folder, tlactivity, data_list, data_headers)
 				
 		else:
-			logfunc("No iOS emails available")
+			logfunc("No Apple Mail emails available")
 
 __artifacts__ = {
     "mailprotect": (
-        "iOS Mail",
-        ('**/private/var/mobile/Library/Mail/* Index*'),
+        "Apple Mail",
+        ('*/mobile/Library/Mail/* Index*'),
         get_mailprotect)
 }

@@ -1,12 +1,12 @@
 import os
 import struct
 import blackboxprotobuf
-from datetime import datetime
+from datetime import datetime, timezone
 from time import mktime
 from io import StringIO
 from io import BytesIO
 from scripts.artifact_report import ArtifactHtmlReport
-from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly
+from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly, convert_utc_human_to_timezone, timestampsconv
 
 def utf8_in_extended_ascii(input_string, *, raise_on_unexpected=False):
     """Returns a tuple of bool (whether mis-encoded utf-8 is present) and str (the converted string)"""
@@ -66,12 +66,7 @@ def utf8_in_extended_ascii(input_string, *, raise_on_unexpected=False):
     
     return mis_encoded_utf8_present, "".join(output)
 
-def timestampsconv(webkittime):
-    unix_timestamp = webkittime + 978307200
-    finaltime = datetime.utcfromtimestamp(unix_timestamp)
-    return(finaltime)
-
-def get_biomeSafari(files_found, report_folder, seeker, wrap_text):
+def get_biomeSafari(files_found, report_folder, seeker, wrap_text, timezone_offset):
 
     typess = {'1': {'type': 'message', 'message_typedef': {'1': {'type': 'str', 'name': ''}, '2': {'type': 'message', 'message_typedef': {'1': {'type': 'int', 'name': ''}, '2': {'type': 'int', 'name': ''}}, 'name': ''}}, 'name': ''}, '2': {'type': 'double', 'name': ''}, '3': {'type': 'double', 'name': ''}, '4': {'type': 'message', 'message_typedef': {'1': {'type': 'message', 'message_typedef': {'1': {'type': 'int', 'name': ''}, '2': {'type': 'int', 'name': ''}}, 'name': ''}, '3': {'type': 'str', 'name': ''}}, 'name': ''}, '5': {'type': 'str', 'name': ''}, '6': {'type': 'message', 'message_typedef': {'1': {'type': 'str', 'name': ''}, '2': {'type': 'str', 'name': ''}, '3': {'type': 'str', 'name': ''}, '4': {'type': 'str', 'name': ''}, '6': {'type': 'int', 'name': ''}}, 'name': ''}, '7': {'type': 'message', 'message_typedef': {'1': {'type': 'message', 'message_typedef': {}, 'name': ''}, '2': {'type': 'message', 'message_typedef': {'1': {'type': 'message', 'message_typedef': {'1': {'type': 'int', 'name': ''}, '2': {'type': 'int', 'name': ''}}, 'name': ''}, '3': {'type': 'str', 'name': ''}}, 'name': ''}, '3': {'type': 'int', 'name': ''}}, 'name': ''}, '8': {'type': 'fixed64', 'name': ''}, '10': {'type': 'int', 'name': ''}}
     
@@ -143,6 +138,7 @@ def get_biomeSafari(files_found, report_folder, seeker, wrap_text):
                 
                 activity = (protostuff['1']['1'])
                 timestart = (timestampsconv(protostuff['2']))
+                timestart = convert_utc_human_to_timezone(timestart, timezone_offset)
                 url = (protostuff['4']['3'])
                 guid = (protostuff['5'])
                 detail1 = (protostuff['6']['1'])
@@ -166,7 +162,7 @@ def get_biomeSafari(files_found, report_folder, seeker, wrap_text):
             report = ArtifactHtmlReport(f'Biome Safari')
             report.start_artifact_report(report_folder, f'Biome Safari - {filename}', description)
             report.add_script()
-            data_headers = ('Time Start','Activity', 'Title', 'URL', 'Detail', 'Detail', 'Detail', 'GUID')
+            data_headers = ('Timestamp','Activity', 'Title', 'URL', 'Detail', 'Detail', 'Detail', 'GUID')
             report.write_artifact_data_table(data_headers, data_list, file_found)
             report.end_artifact_report()
             

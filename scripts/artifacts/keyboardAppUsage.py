@@ -4,7 +4,7 @@ from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, tsv, timeline
 
 
-def get_keyboardAppUsage(files_found, report_folder, seeker, wrap_text):
+def get_keyboardAppUsage(files_found, report_folder, seeker, wrap_text, timezone_offset):
     data_list = []
 
     for file_found in files_found:
@@ -35,6 +35,6 @@ def get_keyboardAppUsage(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "keyboardAppUsage": (
         "Keyboard",
-        ('*/private/var/mobile/Library/Keyboard/app_usage_database.plist'),
+        ('*/mobile/Library/Keyboard/app_usage_database.plist'),
         get_keyboardAppUsage)
 }

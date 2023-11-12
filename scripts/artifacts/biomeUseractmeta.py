@@ -1,13 +1,14 @@
 import os
 import struct
 import blackboxprotobuf
+from datetime import datetime, timezone
 import nska_deserialize as nd
 from datetime import datetime
 from time import mktime
 from io import StringIO
 from io import BytesIO
 from scripts.artifact_report import ArtifactHtmlReport
-from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly
+from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly, convert_ts_human_to_utc, convert_utc_human_to_timezone, convert_time_obj_to_utc 
 
 def utf8_in_extended_ascii(input_string, *, raise_on_unexpected=False):
     """Returns a tuple of bool (whether mis-encoded utf-8 is present) and str (the converted string)"""
@@ -69,10 +70,10 @@ def utf8_in_extended_ascii(input_string, *, raise_on_unexpected=False):
 
 def timestampsconv(webkittime):
     unix_timestamp = webkittime + 978307200
-    finaltime = datetime.utcfromtimestamp(unix_timestamp)
+    finaltime = datetime.fromtimestamp(unix_timestamp, tz=timezone.utc)
     return(finaltime)
 
-def get_biomeUseractmeta(files_found, report_folder, seeker, wrap_text):
+def get_biomeUseractmeta(files_found, report_folder, seeker, wrap_text, timezone_offset):
 
     #typess = {'1': {'type': 'message', 'message_typedef': {'1': {'type': 'str', 'name': ''}, '2': {'type': 'message', 'message_typedef': {'1': {'type': 'int', 'name': ''}, '2': {'type': 'int', 'name': ''}}, 'name': ''}}, 'name': ''}, '2': {'type': 'double', 'name': ''}, '3': {'type': 'double', 'name': ''}, '4': {'type': 'message', 'message_typedef': {'1': {'type': 'message', 'message_typedef': {'1': {'type': 'int', 'name': ''}, '2': {'type': 'int', 'name': ''}}, 'name': ''}, '5': {'type': 'double', 'name': ''}}, 'name': ''}, '5': {'type': 'str', 'name': ''}, '8': {'type': 'double', 'name': ''}, '10': {'type': 'int', 'name': ''}}
     
@@ -152,6 +153,8 @@ def get_biomeUseractmeta(files_found, report_folder, seeker, wrap_text):
                 
                 title = (deserialized_plist.get('title',''))
                 when = (deserialized_plist['when'])
+                when = convert_time_obj_to_utc(when)
+                when = convert_utc_human_to_timezone(when, timezone_offset)
                 actype = (deserialized_plist['activityType'])
                 exdate = (deserialized_plist.get('expirationDate',''))
                 
@@ -201,7 +204,7 @@ def get_biomeUseractmeta(files_found, report_folder, seeker, wrap_text):
             report = ArtifactHtmlReport(f'Biome User Activity Metadata')
             report.start_artifact_report(report_folder, f'Biome User Activity Metadata - {filename}', description)
             report.add_script()
-            data_headers = ('Time Start','Activity type','Description','Description','Title', 'Bplist Data','Payload Data','Container Data')
+            data_headers = ('Timestamp','Activity type','Description','Description','Title', 'Bplist Data','Payload Data','Container Data')
             report.write_artifact_data_table(data_headers, data_list, file_found, html_no_escape=['Bplist Data'])
             report.end_artifact_report()
             

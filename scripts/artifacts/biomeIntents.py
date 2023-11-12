@@ -6,7 +6,7 @@ from io import StringIO
 from io import BytesIO
 
 from scripts.artifact_report import ArtifactHtmlReport
-from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly
+from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly, convert_ts_human_to_utc, convert_utc_human_to_timezone, convert_time_obj_to_utc 
 
 def utf8_in_extended_ascii(input_string, *, raise_on_unexpected=False):
     """Returns a tuple of bool (whether mis-encoded utf-8 is present) and str (the converted string)"""
@@ -68,10 +68,10 @@ def utf8_in_extended_ascii(input_string, *, raise_on_unexpected=False):
 
 def timestampsconv(webkittime):
     unix_timestamp = webkittime + 978307200
-    finaltime = datetime.utcfromtimestamp(unix_timestamp)
+    finaltime = datetime.fromtimestamp(unix_timestamp, tz=timezone.utc)
     return(finaltime)
 
-def get_biomeIntents(files_found, report_folder, seeker, wrap_text):
+def get_biomeIntents(files_found, report_folder, seeker, wrap_text, timezone_offset):
     
     files_found = sorted(files_found)
     
@@ -190,7 +190,13 @@ def get_biomeIntents(files_found, report_folder, seeker, wrap_text):
                     
                     #print(deserialized_plist)
                     startdate = (deserialized_plist['dateInterval']['NS.startDate'])
+                    startdate = convert_time_obj_to_utc(startdate)
+                    startdate = convert_utc_human_to_timezone(startdate, timezone_offset)
+                    
                     enddate = (deserialized_plist['dateInterval']['NS.endDate'])
+                    enddate = convert_time_obj_to_utc(enddate)
+                    enddate = convert_utc_human_to_timezone(enddate, timezone_offset)
+                    
                     durationinterval = (deserialized_plist['dateInterval']['NS.duration'])
                     #print(deserialized_plist['intent'])
                     donatedbysiri = (deserialized_plist['_donatedBySiri'])
@@ -308,7 +314,10 @@ def get_biomeIntents(files_found, report_folder, seeker, wrap_text):
                             
                             for loopy in protostuffinner['4']:
                                 a = loopy['1'].decode()
-                                b = loopy['2']['2']['2']
+                                try:
+                                    b = loopy['2']['2']['2']
+                                except:
+                                    b = loopy['2']
                                 datos = datos + f'{a}: {b},'
                                 
                             datoshtml = (datos.replace(',', '<br>'))
@@ -334,24 +343,24 @@ def get_biomeIntents(files_found, report_folder, seeker, wrap_text):
         
             description = 'App Intents. Protobuf data for unsupported apps is located in the Intents directory within the report folder. Use the offset name for identification and further processing.'
             report = ArtifactHtmlReport(f'Intents')
-            report.start_artifact_report(report_folder, f'Intents - {filename}', description)
+            report.start_artifact_report(report_folder, f'Biome Intents - {filename}', description)
             report.add_script()
             data_headers = ('Timestamp','End Date','Duration Interval','Donated by Siri','App ID','Classname','Action', 'Direction', 'Group ID', 'Data', 'Filename', 'Protobuf data Offset')
             report.write_artifact_data_table(data_headers, data_list, file_found, html_escape=False)
             report.end_artifact_report()
             
-            tsvname = f'Intents - {filename}'
+            tsvname = f'Biome Intents - {filename}'
             tsv(report_folder, data_headers, data_list_tsv, tsvname) # TODO: _csv.Error: need to escape, but no escapechar set
             
-            tlactivity = f'Intents - {filename}'
+            tlactivity = f'Biome Intents - {filename}'
             timeline(report_folder, tlactivity, data_list_tsv, data_headers)
         else:
-            logfunc(f'No data available for Intents')
+            logfunc(f'No data available for Biome Intents')
     
 
 __artifacts__ = {
     "Intents": (
         "Biome Intents",
-        ('*/private/var/mobile/Library/Biome/streams/public/AppIntent/local/*','*/AppIntent/local/*'),
+        ('*/mobile/Library/Biome/streams/public/AppIntent/local/*','*/AppIntent/local/*'),
         get_biomeIntents)
 }

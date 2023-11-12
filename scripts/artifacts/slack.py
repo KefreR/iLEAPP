@@ -5,7 +5,7 @@ from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, tsv, timeline, open_sqlite_db_readonly
 
 
-def get_slack(files_found, report_folder, seeker, wrap_text):
+def get_slack(files_found, report_folder, seeker, wrap_text, timezone_offset):
     
     for file_found in files_found:
         file_found = str(file_found)
@@ -482,7 +482,7 @@ def get_slack(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "slack": (
         "Slack",
-        ('*/var/mobile/Containers/Data/Application/*/Library/Application Support/Slack/*/*/main_db*'),
+        ('*/mobile/Containers/Data/Application/*/Library/Application Support/Slack/*/*/main_db*'),
         get_slack)
 }
     

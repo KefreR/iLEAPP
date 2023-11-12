@@ -11,7 +11,7 @@ from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, logdevinfo, timeline, kmlgen, tsv, is_platform_windows, open_sqlite_db_readonly
 
 
-def get_imoHD_Chat(files_found, report_folder, seeker, wrap_text):
+def get_imoHD_Chat(files_found, report_folder, seeker, wrap_text, timezone_offset):
     
     for file_found in files_found:
         file_found = str(file_found)
@@ -150,6 +150,6 @@ def get_imoHD_Chat(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "imoHD_Chat": (
         "IMO HD Chat",
-        ('**/IMODb2.sqlite*','private/var/mobile/Containers/Data/Application/*/Library/Caches/videos/*.webp'),
+        ('*/IMODb2.sqlite*','*/mobile/Containers/Data/Application/*/Library/Caches/videos/*.webp'),
         get_imoHD_Chat)
 }

@@ -5,7 +5,7 @@ from scripts.builds_ids import OS_build
 from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows
 
-def get_restoreLog(files_found, report_folder, seeker, wrap_text):
+def get_restoreLog(files_found, report_folder, seeker, wrap_text, timezone_offset):
 
     data_list = []
     pattern = 'data = '
@@ -105,6 +105,6 @@ def get_restoreLog(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "restoreLog": (
         "Mobile Software Update",
-        ('**/private/var/mobile/MobileSoftwareUpdate/restore.log'),
+        ('*/mobile/MobileSoftwareUpdate/restore.log'),
         get_restoreLog)
 }

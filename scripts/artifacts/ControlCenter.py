@@ -1,8 +1,18 @@
-# Module Description: Parses controls/apps added to the Control Center
-# Author: @KevinPagano3
-# Date: 2022-04-28
-# Artifact version: 0.0.1
-# Requirements: none
+__artifacts_v2__ = {
+    "controlcenter": {
+        "name": "Control Center Configuration",
+        "description": "Parses controls/apps added to the Control Center",
+        "author": "@KevinPagano3",
+        "version": "0.0.1",
+        "date": "2022-04-28",
+        "requirements": "none",
+        "category": "Control Center",
+        "notes": "",
+        "paths": ('*/mobile/Library/ControlCenter/ModuleConfiguration.plist',),
+        "function": "get_ControlCenter"
+    }
+}
+
 
 import plistlib
 import scripts.artifacts.artGlobals
@@ -11,7 +21,7 @@ from packaging import version
 from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, logdevinfo, tsv, is_platform_windows 
 
-def get_ControlCenter(files_found, report_folder, seeker, wrap_text):
+def get_ControlCenter(files_found, report_folder, seeker, wrap_text, timezone_offset):
     data_list_disabled = []
     data_list_modules = []
     data_list_userenabled = []
@@ -104,9 +114,9 @@ def get_ControlCenter(files_found, report_folder, seeker, wrap_text):
     else:
         logfunc('No Control Center - User Toggled Controls data available')
 
-__artifacts__ = {
-    "controlcenter": (
-        "Control Center",
-        ('**private/var/mobile/Library/ControlCenter/ModuleConfiguration.plist'),
-        get_ControlCenter)
-}
+# __artifacts__ = {
+#     "controlcenter": (
+#         "Control Center",
+#         ('*/mobile/Library/ControlCenter/ModuleConfiguration.plist'),
+#         get_ControlCenter)
+# }

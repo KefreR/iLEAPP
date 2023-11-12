@@ -6,7 +6,7 @@ from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, tsv, timeline, open_sqlite_db_readonly
 
 
-def get_metamask(files_found, report_folder, seeker, wrap_text):
+def get_metamask(files_found, report_folder, seeker, wrap_text, timezone_offset):
     wallets = []
     contacts = []
     transactions = []
@@ -89,6 +89,6 @@ def get_metamask(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "metamask": (
         "Metamask",
-        ('*/private/var/mobile/Containers/Data/Application/*/Documents/persistStore/persist-root'),
+        ('*/mobile/Containers/Data/Application/*/Documents/persistStore/persist-root'),
         get_metamask)
 }

@@ -1,14 +1,24 @@
-import glob
-import os
-import nska_deserialize as nd
-import sqlite3
-import datetime
+__artifacts_v2__ = {
+    "filesappsdb": {
+        "name": "Files App Db",
+        "description": "Items stored in iCloud Drive.",
+        "author": "@AlexisBrignoni",
+        "version": "0.1",
+        "date": "2023-01-01",
+        "requirements": "none",
+        "category": "Files App",
+        "notes": "",
+        "paths": ('*/mobile/Library/Application Support/CloudDocs/session/db/server.db*',),
+        "function": "get_filesAppsdb"
+    }
+}
+
 
 from scripts.artifact_report import ArtifactHtmlReport
-from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly
+from scripts.ilapfuncs import logfunc, tsv, timeline, open_sqlite_db_readonly, convert_ts_human_to_utc, convert_utc_human_to_timezone
 
 
-def get_filesAppsdb(files_found, report_folder, seeker, wrap_text):
+def get_filesAppsdb(files_found, report_folder, seeker, wrap_text, timezone_offset):
     for file_found in files_found:
         file_found = str(file_found)
         
@@ -48,9 +58,9 @@ def get_filesAppsdb(files_found, report_folder, seeker, wrap_text):
     
     cursor.execute('''
     SELECT
-    item_birthtime,
+    datetime(item_birthtime, 'unixepoch'),
     item_filename,
-    version_mtime
+    datetime(version_mtime, 'unixepoch')
     FROM
     server_items
     ''')
@@ -60,8 +70,12 @@ def get_filesAppsdb(files_found, report_folder, seeker, wrap_text):
     data_list = []
     if usageentries > 0:
         for row in all_rows:
-            birthtime = datetime.datetime.fromtimestamp(row[0])
-            versionmtime = datetime.datetime.fromtimestamp(row[2])
+            birthtime = convert_ts_human_to_utc(row[0])
+            birthtime = convert_utc_human_to_timezone(birthtime,timezone_offset)
+
+            versionmtime = convert_ts_human_to_utc(row[2])
+            versionmtime = convert_utc_human_to_timezone(versionmtime,timezone_offset)
+
             data_list.append((birthtime, row[1], versionmtime))
             
         description = ''
@@ -80,9 +94,3 @@ def get_filesAppsdb(files_found, report_folder, seeker, wrap_text):
     else:
         logfunc('No Files App - iCloud Server Items data available')
     
-__artifacts__ = {
-    "filesappsdb": (
-        "Files App",
-        ('*private/var/mobile/Library/Application Support/CloudDocs/session/db/server.db*'),
-        get_filesAppsdb)
-}

@@ -1,3 +1,19 @@
+__artifacts_v2__ = {
+    "whatsappContacts": {
+        "name": "Whatsapp Contacts",
+        "description": "",
+        "author": "",
+        "version": "",
+        "date": "",
+        "requirements": "",
+        "category": "Whatsapp",
+        "notes": "",
+        "paths": ('*/var/mobile/Containers/Shared/AppGroup/*/ContactsV2.sqlite*',),
+        "function": "get_whatsappContacts"
+    }
+}
+
+
 import sqlite3
 import io
 import json
@@ -11,7 +27,7 @@ from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, logdevinfo, timeline, kmlgen, tsv, is_platform_windows, open_sqlite_db_readonly
 
 
-def get_whatsappContacts(files_found, report_folder, seeker, wrap_text):
+def get_whatsappContacts(files_found, report_folder, seeker, wrap_text, timezone_offset):
     
     for file_found in files_found:
         file_found = str(file_found)
@@ -57,10 +73,3 @@ def get_whatsappContacts(files_found, report_folder, seeker, wrap_text):
         
     else:
         logfunc('Whatsapp - Contacts data available')
-        
-__artifacts__ = {
-    "whatsappContacts": (
-        "Whatsapp",
-        ('*/var/mobile/Containers/Shared/AppGroup/*/ContactsV2.sqlite*'),
-        get_whatsappContacts)
-}

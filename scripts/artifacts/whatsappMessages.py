@@ -1,3 +1,22 @@
+__artifacts_v2__ = {
+    "whatsappMessages": {
+        "name": "Whatsapp Messages",
+        "description": "",
+        "author": "",
+        "version": "",
+        "date": "",
+        "requirements": "",
+        "category": "Whatsapp",
+        "notes": "",
+        "paths": (
+            '*/var/mobile/Containers/Shared/AppGroup/*/ChatStorage.sqlite*',
+            '*/var/mobile/Containers/Shared/AppGroup/*/Message/Media/*/*/*/*.*'
+        ),
+        "function": "get_whatsappMessages"
+    }
+}
+
+
 import sqlite3
 import io
 import json
@@ -11,7 +30,7 @@ from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, logdevinfo, timeline, kmlgen, tsv, is_platform_windows, open_sqlite_db_readonly
 
 
-def get_whatsappMessages(files_found, report_folder, seeker, wrap_text):
+def get_whatsappMessages(files_found, report_folder, seeker, wrap_text, timezone_offset):
     
     for file_found in files_found:
         file_found = str(file_found)
@@ -114,10 +133,3 @@ def get_whatsappMessages(files_found, report_folder, seeker, wrap_text):
         
     else:
         logfunc('Whatsapp - Messages data available')
-        
-__artifacts__ = {
-    "whatsappMessages": (
-        "Whatsapp",
-        ('*/var/mobile/Containers/Shared/AppGroup/*/ChatStorage.sqlite*','*/var/mobile/Containers/Shared/AppGroup/*/Message/Media/*/*/*/*.*'),
-        get_whatsappMessages)
-}

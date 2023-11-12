@@ -2,12 +2,14 @@ import glob
 import os
 import pathlib
 import sqlite3
+from datetime import datetime, timezone
 
 from scripts.artifact_report import ArtifactHtmlReport
-from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly
+from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly, convert_ts_human_to_utc, convert_utc_human_to_timezone 
 
 
-def get_tileAppNetDb(files_found, report_folder, seeker, wrap_text):
+
+def get_tileAppNetDb(files_found, report_folder, seeker, wrap_text, timezone_offset):
     for file_found in files_found:
         file_found = str(file_found)
         
@@ -31,7 +33,14 @@ def get_tileAppNetDb(files_found, report_folder, seeker, wrap_text):
     data_list = []    
     if usageentries > 0:
         for row in all_rows:
-            data_list.append((row[0], row[1], row[2], row[3]))
+            timestamp = row[0]
+            if timestamp is None:
+                pass
+            else:
+                timestamp = convert_ts_human_to_utc(timestamp)
+                timestamp = convert_utc_human_to_timezone(timestamp,timezone_offset)
+                
+            data_list.append((timestamp, row[1], row[2], row[3]))
             
             description = ''
             report = ArtifactHtmlReport('Tile App - Account Information')
@@ -55,6 +64,6 @@ def get_tileAppNetDb(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "tileAppNetDb": (
         "Accounts",
-        ('*/private/var/mobile/Containers/Shared/AppGroup/*/com.thetileapp.tile-TileNetworkDB.sqlite*'),
+        ('*/mobile/Containers/Shared/AppGroup/*/com.thetileapp.tile-TileNetworkDB.sqlite*'),
         get_tileAppNetDb)
 }

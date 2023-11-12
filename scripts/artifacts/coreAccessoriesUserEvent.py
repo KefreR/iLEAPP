@@ -13,7 +13,7 @@ from scripts.ilapfuncs import logfunc, logdevinfo, tsv, is_platform_windows, ope
 import datetime
 
 
-def get_coreAccessoriesUserEvent(files_found, report_folder, seeker, wrap_text):
+def get_coreAccessoriesUserEvent(files_found, report_folder, seeker, wrap_text, timezone_offset):
 
     for file_found in files_found:
         file_name = str(file_found)
@@ -88,6 +88,6 @@ def get_coreAccessoriesUserEvent(files_found, report_folder, seeker, wrap_text):
 __artifacts__ = {
     "coreAccessoriesUserEvent": (
         "Core Accessories",
-        ('*/private/var/mobile/Library/CoreAccessories/Analytics/acc_analytics_UserEventAgent_v3.db*'),
+        ('*/mobile/Library/CoreAccessories/Analytics/acc_analytics_UserEventAgent_v3.db*'),
         get_coreAccessoriesUserEvent)
 }

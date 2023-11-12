@@ -6,7 +6,7 @@ from scripts.artifact_report import ArtifactHtmlReport
 from scripts.ilapfuncs import logfunc, tsv, timeline, is_platform_windows, open_sqlite_db_readonly, sanitize_file_name
 from scripts.chat_rendering import render_chat, chat_HTML
 
-def get_sms(files_found, report_folder, seeker, wrap_text):
+def get_sms(files_found, report_folder, seeker, wrap_text, timezone_offset):
     
     for file_found in files_found:
         file_name = str(file_found)
@@ -125,7 +125,7 @@ def get_sms(files_found, report_folder, seeker, wrap_text):
         report = ArtifactHtmlReport('SMS & iMessage - Messages')
         report.start_artifact_report(report_folder, 'SMS & iMessage - Messages')
         report.add_script()
-        data_headers = ('Message Timestamp','Read Timestamp','Message','Service','Message Direction','Message Sent','Message Delivered','Message Read','Account','Account Login','Chat Contact ID','Attachment Name','Attachment Path','Attachment Timestamp','Attachment Mimetype','Attachment Size (Bytes)','Messsage Row ID','Chat ID','From Me')
+        data_headers = ('Message Timestamp','Read Timestamp','Message','Service','Message Direction','Message Sent','Message Delivered','Message Read','Account','Account Login','Chat Contact ID','Attachment Name','Attachment Path','Attachment Timestamp','Attachment Mimetype','Attachment Size (Bytes)','Message Row ID','Chat ID','From Me')
         report.write_artifact_data_table(data_headers, data_list, file_found)
         report.end_artifact_report()
         
